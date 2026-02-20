@@ -62,7 +62,7 @@ const Index = () => {
                 onChange={() => toggleTodo(todo.id)}
                 className="h-4 w-4 accent-primary cursor-pointer"
               />
-              <span className={`flex-1 text-foreground ${todo.done ? "line-through text-muted-foreground" : ""}`}>
+              <span className={`flex-1 text-muted-foreground ${todo.done ? "line-through opacity-50" : ""}`}>
                 {todo.text}
               </span>
               <button
