@@ -25,7 +25,7 @@ const Index = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-background pt-24 px-4">
+    <div className="flex min-h-screen items-start justify-center bg-background mt-20 px-4">
       <div className="w-full max-w-md">
         <h1 className="mb-8 text-7xl font-bold text-foreground">TODO</h1>
 
