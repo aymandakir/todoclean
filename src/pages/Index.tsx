@@ -47,7 +47,7 @@ const Index = () => {
         </div>
 
         {/* List */}
-        <ul className="space-y-2">
+        <ul className="space-y-2 list-disc list-inside marker:text-primary">
           {todos.length === 0 && (
             <p className="text-center text-muted-foreground py-8">No tasks yet. Add one above!</p>
           )}
