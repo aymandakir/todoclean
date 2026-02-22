@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Moon, Sun } from "lucide-react";
 
 interface Todo {
   id: number;
@@ -9,6 +10,11 @@ interface Todo {
 const Index = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [input, setInput] = useState("");
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   const addTodo = () => {
     if (!input.trim()) return;
@@ -27,7 +33,16 @@ const Index = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        <h1 className="mb-8 text-7xl font-bold text-foreground">TODO</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-7xl font-bold text-foreground">TODO</h1>
+          <button
+            onClick={() => setDark(!dark)}
+            className="rounded-lg border border-border bg-card p-2 text-foreground hover:bg-accent transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+        </div>
 
         {/* Input */}
         <div className="flex gap-2 mb-6">
