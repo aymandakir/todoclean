@@ -115,6 +115,15 @@ const Index = () => {
             </li>
           ))}
         </ul>
+
+        {todos.some(t => t.done) && (
+          <button
+            onClick={() => setTodos(todos.filter(t => !t.done))}
+            className="mt-4 w-full rounded-lg border border-border bg-card px-4 py-2 text-sm text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
+          >
+            Clear completed
+          </button>
+        )}
       </div>
     </div>
   );
