@@ -55,7 +55,7 @@ const Index = () => {
           />
           <button
             onClick={addTodo}
-            className="rounded-lg bg-green-600 px-10 py-10 text-sm text-white font-semibold shadow-lg shadow-green-600/30 hover:shadow-xl hover:shadow-green-600/40 hover:scale-105 active:scale-95 transition-all duration-200"
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm text-white font-semibold shadow-lg shadow-green-600/30 hover:shadow-xl hover:shadow-green-600/40 hover:scale-105 active:scale-95 transition-all duration-200"
           >
             Add
           </button>
