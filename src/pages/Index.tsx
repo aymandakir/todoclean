@@ -10,6 +10,7 @@ interface Todo {
 const Index = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [input, setInput] = useState("");
+  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   useEffect(() => {
@@ -25,6 +26,12 @@ const Index = () => {
   const toggleTodo = (id: number) => {
     setTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t));
   };
+
+  const filteredTodos = todos.filter(t => {
+    if (filter === "active") return !t.done;
+    if (filter === "completed") return t.done;
+    return true;
+  });
 
   const deleteTodo = (id: number) => {
     setTodos(todos.filter(t => t.id !== id));
@@ -61,12 +68,31 @@ const Index = () => {
           </button>
         </div>
 
+        {/* Filter Tabs */}
+        <div className="flex gap-1 mb-4 rounded-lg border border-border bg-card p-1">
+          {(["all", "active", "completed"] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
+                filter === f
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
         {/* List */}
-        <ul className="space-y-2 list-disc list-inside marker:text-primary">
-          {todos.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">No tasks yet. Add one above!</p>
+        <ul className="space-y-2">
+          {filteredTodos.length === 0 && (
+            <p className="text-center text-muted-foreground py-8">
+              {filter === "all" ? "No tasks yet. Add one above!" : `No ${filter} tasks.`}
+            </p>
           )}
-          {todos.map(todo => (
+          {filteredTodos.map(todo => (
             <li
               key={todo.id}
               className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3"
