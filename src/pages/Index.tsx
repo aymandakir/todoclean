@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, LogOut } from "lucide-react";
+import { Moon, Sun, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +17,7 @@ const Index = () => {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -103,6 +105,13 @@ const Index = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-7xl font-bold text-foreground">TODO</h1>
           <div className="flex gap-2">
+            <button
+              onClick={() => navigate("/profile")}
+              className="rounded-lg border border-border bg-card p-2 text-foreground hover:bg-accent transition-colors"
+              aria-label="Profile"
+            >
+              <User className="h-5 w-5" />
+            </button>
             <button
               onClick={() => setDark(!dark)}
               className="rounded-lg border border-border bg-card p-2 text-foreground hover:bg-accent transition-colors"
