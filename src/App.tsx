@@ -9,6 +9,7 @@ import type { Session } from "@supabase/supabase-js";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={session ? <Index /> : <Navigate to="/auth" replace />} />
+            <Route path="/profile" element={session ? <Profile /> : <Navigate to="/auth" replace />} />
             <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
