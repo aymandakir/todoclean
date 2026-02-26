@@ -9,11 +9,47 @@ import type { Session } from "@supabase/supabase-js";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
+import Onboarding from "./pages/Onboarding";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const ProtectedRoute = ({
+  session,
+  children,
+}: {
+  session: Session;
+  children: React.ReactNode;
+}) => {
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", session.user.id)
+      .single()
+      .then(({ data }) => {
+        setOnboarded(data?.onboarding_completed ?? false);
+      });
+  }, [session.user.id]);
+
+  if (onboarded === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!onboarded) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const App = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -49,8 +85,31 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={session ? <Navigate to="/app" replace /> : <Landing />} />
-            <Route path="/app" element={session ? <Index /> : <Navigate to="/auth" replace />} />
-            <Route path="/profile" element={session ? <Profile /> : <Navigate to="/auth" replace />} />
+            <Route
+              path="/app"
+              element={
+                session ? (
+                  <ProtectedRoute session={session}>
+                    <Index />
+                  </ProtectedRoute>
+                ) : (
+                  <Navigate to="/auth" replace />
+                )
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                session ? (
+                  <ProtectedRoute session={session}>
+                    <Profile />
+                  </ProtectedRoute>
+                ) : (
+                  <Navigate to="/auth" replace />
+                )
+              }
+            />
+            <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/auth" replace />} />
             <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/app" replace />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
