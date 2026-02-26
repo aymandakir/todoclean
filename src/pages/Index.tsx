@@ -27,6 +27,7 @@ interface Todo {
   text: string;
   done: boolean;
   position: number;
+  category?: string | null;
 }
 
 const Index = () => {
@@ -59,7 +60,7 @@ const Index = () => {
   const fetchTodos = async () => {
     const { data, error } = await supabase
       .from("todos")
-      .select("id, text, done, position")
+      .select("id, text, done, position, category")
       .order("position", { ascending: true });
 
     if (error) {
@@ -84,23 +85,43 @@ const Index = () => {
     }
   };
 
-  const addTodo = async () => {
-    if (!input.trim()) return;
+  const addTodo = async (text?: string) => {
+    const taskText = text || input.trim();
+    if (!taskText) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const newPosition = todos.length;
     const { data, error } = await supabase
       .from("todos")
-      .insert({ text: input.trim(), user_id: user.id, position: newPosition })
-      .select("id, text, done, position")
+      .insert({ text: taskText, user_id: user.id, position: newPosition } as any)
+      .select("id, text, done, position, category")
       .single();
 
     if (error) {
       toast({ title: "Error adding todo", description: error.message, variant: "destructive" });
     } else if (data) {
-      setTodos([...todos, data]);
-      setInput("");
+      setTodos((prev) => [...prev, data]);
+      if (!text) setInput("");
+
+      // Auto-categorize in background
+      supabase.functions
+        .invoke("categorize-task", { body: { text: taskText } })
+        .then(({ data: catData }) => {
+          if (catData?.category && data.id) {
+            supabase
+              .from("todos")
+              .update({ category: catData.category } as any)
+              .eq("id", data.id)
+              .then(() => {
+                setTodos((prev) =>
+                  prev.map((t) =>
+                    t.id === data.id ? { ...t, category: catData.category } : t
+                  )
+                );
+              });
+          }
+        });
     }
   };
 
@@ -157,19 +178,8 @@ const Index = () => {
   };
 
   const addSuggestion = async (text: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const newPosition = todos.length;
-    const { data, error } = await supabase
-      .from("todos")
-      .insert({ text, user_id: user.id, position: newPosition })
-      .select("id, text, done, position")
-      .single();
-    if (!error && data) {
-      setTodos([...todos, data]);
-      setSuggestions(suggestions.filter((s) => s !== text));
-      toast({ title: "Task added!" });
-    }
+    await addTodo(text);
+    setSuggestions(suggestions.filter((s) => s !== text));
   };
 
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
@@ -250,7 +260,7 @@ const Index = () => {
             onKeyDown={(e) => e.key === "Enter" && addTodo()}
           />
           <button
-            onClick={addTodo}
+            onClick={() => addTodo()}
             className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground font-semibold shadow-lg hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200"
           >
             Add
