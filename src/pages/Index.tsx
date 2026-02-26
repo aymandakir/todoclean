@@ -1,14 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Moon, Sun, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import SortableTodoItem from "@/components/SortableTodoItem";
 
 interface Todo {
   id: string;
   text: string;
   done: boolean;
+  position: number;
 }
 
 const Index = () => {
@@ -22,6 +39,11 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
@@ -34,8 +56,8 @@ const Index = () => {
   const fetchTodos = async () => {
     const { data, error } = await supabase
       .from("todos")
-      .select("id, text, done")
-      .order("created_at", { ascending: true });
+      .select("id, text, done, position")
+      .order("position", { ascending: true });
 
     if (error) {
       toast({ title: "Error loading todos", description: error.message, variant: "destructive" });
@@ -64,10 +86,11 @@ const Index = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    const newPosition = todos.length;
     const { data, error } = await supabase
       .from("todos")
-      .insert({ text: input.trim(), user_id: user.id })
-      .select("id, text, done")
+      .insert({ text: input.trim(), user_id: user.id, position: newPosition })
+      .select("id, text, done, position")
       .single();
 
     if (error) {
@@ -110,6 +133,22 @@ const Index = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = todos.findIndex((t) => t.id === active.id);
+    const newIndex = todos.findIndex((t) => t.id === over.id);
+    const reordered = arrayMove(todos, oldIndex, newIndex).map((t, i) => ({ ...t, position: i }));
+    setTodos(reordered);
+
+    // Persist new positions
+    const updates = reordered.map((t) =>
+      supabase.from("todos").update({ position: t.position }).eq("id", t.id)
+    );
+    await Promise.all(updates);
+  }, [todos]);
 
   const filteredTodos = todos.filter((t) => {
     if (filter === "active") return !t.done;
@@ -198,42 +237,28 @@ const Index = () => {
         </div>
 
         {/* List */}
-        <ul className="space-y-2">
-          {loading && (
-            <p className="text-center text-muted-foreground py-8">Loading...</p>
-          )}
-          {!loading && filteredTodos.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">
-              {filter === "all" ? "No tasks yet. Add one above!" : `No ${filter} tasks.`}
-            </p>
-          )}
-          {filteredTodos.map((todo) => (
-            <li
-              key={todo.id}
-              className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3"
-            >
-              <input
-                type="checkbox"
-                checked={todo.done}
-                onChange={() => toggleTodo(todo.id)}
-                className="h-4 w-4 accent-primary cursor-pointer"
-              />
-              <span
-                className={`flex-1 text-xs text-muted-foreground ${
-                  todo.done ? "line-through opacity-50" : ""
-                }`}
-              >
-                {todo.text}
-              </span>
-              <button
-                onClick={() => deleteTodo(todo.id)}
-                className="text-muted-foreground hover:text-destructive transition-colors text-lg leading-none"
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={filteredTodos.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+            <ul className="space-y-2">
+              {loading && (
+                <p className="text-center text-muted-foreground py-8">Loading...</p>
+              )}
+              {!loading && filteredTodos.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  {filter === "all" ? "No tasks yet. Add one above!" : `No ${filter} tasks.`}
+                </p>
+              )}
+              {filteredTodos.map((todo) => (
+                <SortableTodoItem
+                  key={todo.id}
+                  todo={todo}
+                  onToggle={toggleTodo}
+                  onDelete={deleteTodo}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
 
         {todos.some((t) => t.done) && (
           <button
