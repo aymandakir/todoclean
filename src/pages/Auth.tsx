@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Moon, Sun } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -67,7 +68,7 @@ const Auth = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-5xl font-bold text-foreground">TODO</h1>
+          <Logo className="text-5xl" />
           <button
             onClick={toggleDark}
             className="rounded-lg border border-border bg-card p-2 text-foreground hover:bg-accent transition-colors"

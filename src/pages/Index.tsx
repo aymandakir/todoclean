@@ -20,6 +20,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import SortableTodoItem from "@/components/SortableTodoItem";
+import Logo from "@/components/Logo";
 
 interface Todo {
   id: string;
@@ -172,7 +173,7 @@ const Index = () => {
               </Avatar>
             </button>
             <div>
-              <h1 className="text-4xl font-bold text-foreground leading-none">TODO</h1>
+              <Logo className="text-4xl leading-none" />
               {displayName && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {(() => {
