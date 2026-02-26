@@ -43,6 +43,7 @@ export type Database = {
           created_at: string
           done: boolean
           id: string
+          position: number
           text: string
           updated_at: string
           user_id: string
@@ -51,6 +52,7 @@ export type Database = {
           created_at?: string
           done?: boolean
           id?: string
+          position?: number
           text: string
           updated_at?: string
           user_id: string
@@ -59,6 +61,7 @@ export type Database = {
           created_at?: string
           done?: boolean
           id?: string
+          position?: number
           text?: string
           updated_at?: string
           user_id?: string
