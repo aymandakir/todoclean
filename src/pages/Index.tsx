@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Moon, Sun, LogOut } from "lucide-react";
+import { Moon, Sun, LogOut, Sparkles, Plus, X, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +37,8 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -133,6 +135,41 @@ const Index = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+  };
+
+  const fetchSuggestions = async () => {
+    setLoadingSuggestions(true);
+    setSuggestions([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("suggest-tasks", {
+        body: { todos: todos.map((t) => ({ text: t.text, done: t.done })) },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast({ title: "AI error", description: data.error, variant: "destructive" });
+      } else {
+        setSuggestions((data?.suggestions || []).map((s: { title: string }) => s.title));
+      }
+    } catch (e: any) {
+      toast({ title: "Failed to get suggestions", description: e.message, variant: "destructive" });
+    }
+    setLoadingSuggestions(false);
+  };
+
+  const addSuggestion = async (text: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const newPosition = todos.length;
+    const { data, error } = await supabase
+      .from("todos")
+      .insert({ text, user_id: user.id, position: newPosition })
+      .select("id, text, done, position")
+      .single();
+    if (!error && data) {
+      setTodos([...todos, data]);
+      setSuggestions(suggestions.filter((s) => s !== text));
+      toast({ title: "Task added!" });
+    }
   };
 
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
@@ -268,6 +305,55 @@ const Index = () => {
           >
             Clear completed
           </button>
+        )}
+
+        {/* AI Suggestions */}
+        <button
+          onClick={fetchSuggestions}
+          disabled={loadingSuggestions}
+          className="mt-4 w-full flex items-center justify-center gap-2 rounded-lg border border-primary/20 bg-accent px-4 py-2.5 text-sm font-medium text-accent-foreground hover:bg-accent/80 transition-colors"
+        >
+          {loadingSuggestions ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Thinking...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4 text-primary" />
+              Suggest tasks with AI
+            </>
+          )}
+        </button>
+
+        {suggestions.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Suggestions
+            </p>
+            {suggestions.map((s) => (
+              <div
+                key={s}
+                className="flex items-center gap-2 rounded-lg border border-dashed border-primary/30 bg-accent/50 px-4 py-2.5"
+              >
+                <span className="flex-1 text-xs text-foreground">{s}</span>
+                <button
+                  onClick={() => addSuggestion(s)}
+                  className="rounded-md bg-primary p-1 text-primary-foreground hover:bg-primary/90 transition-colors"
+                  aria-label="Add suggestion"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => setSuggestions(suggestions.filter((x) => x !== s))}
+                  className="rounded-md border border-border p-1 text-muted-foreground hover:text-destructive transition-colors"
+                  aria-label="Dismiss suggestion"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
