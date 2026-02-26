@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, Zap, Shield, Smartphone, ArrowRight } from "lucide-react";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
+import Logo from "@/components/Logo";
 
 const features = [
   {
@@ -42,9 +43,7 @@ const Landing = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto">
-        <span className="text-xl font-bold tracking-tight text-foreground">
-          todo<span className="text-primary">.</span>
-        </span>
+        <Logo />
         <button
           onClick={() => navigate("/auth")}
           className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
