@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, LogOut, User } from "lucide-react";
+import { Moon, Sun, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface Todo {
   id: string;
@@ -16,6 +17,8 @@ const Index = () => {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [loading, setLoading] = useState(true);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -25,6 +28,7 @@ const Index = () => {
 
   useEffect(() => {
     fetchTodos();
+    fetchProfile();
   }, []);
 
   const fetchTodos = async () => {
@@ -39,6 +43,20 @@ const Index = () => {
       setTodos(data || []);
     }
     setLoading(false);
+  };
+
+  const fetchProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("display_name, avatar_url")
+      .eq("id", user.id)
+      .single();
+    if (data) {
+      setDisplayName(data.display_name);
+      setAvatarUrl(data.avatar_url);
+    }
   };
 
   const addTodo = async () => {
@@ -103,15 +121,25 @@ const Index = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-7xl font-bold text-foreground">TODO</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={() => navigate("/profile")}
-              className="rounded-lg border border-border bg-card p-2 text-foreground hover:bg-accent transition-colors"
-              aria-label="Profile"
-            >
-              <User className="h-5 w-5" />
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate("/profile")} aria-label="Profile">
+              <Avatar className="h-10 w-10 border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all">
+                {avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt="Avatar" />
+                ) : null}
+                <AvatarFallback className="text-sm font-semibold">
+                  {displayName?.charAt(0)?.toUpperCase() || "?"}
+                </AvatarFallback>
+              </Avatar>
             </button>
+            <div>
+              <h1 className="text-4xl font-bold text-foreground leading-none">TODO</h1>
+              {displayName && (
+                <p className="text-xs text-muted-foreground mt-0.5">{displayName}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2">
             <button
               onClick={() => setDark(!dark)}
               className="rounded-lg border border-border bg-card p-2 text-foreground hover:bg-accent transition-colors"
