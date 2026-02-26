@@ -135,7 +135,13 @@ const Index = () => {
             <div>
               <h1 className="text-4xl font-bold text-foreground leading-none">TODO</h1>
               {displayName && (
-                <p className="text-xs text-muted-foreground mt-0.5">{displayName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {(() => {
+                    const h = new Date().getHours();
+                    const greeting = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+                    return `${greeting}, ${displayName}`;
+                  })()}
+                </p>
               )}
             </div>
           </div>
