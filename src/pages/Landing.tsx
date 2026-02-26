@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, Zap, Shield, Smartphone, ArrowRight } from "lucide-react";
+import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
 const features = [
   {
@@ -19,11 +20,26 @@ const features = [
   },
 ];
 
+const revealClasses = (visible: boolean, delay = "") =>
+  `transition-all duration-700 ease-out ${delay} ${
+    visible
+      ? "opacity-100 translate-y-0"
+      : "opacity-0 translate-y-8"
+  }`;
+
 const Landing = () => {
   const navigate = useNavigate();
 
+  const hero = useScrollReveal({ threshold: 0.1 });
+  const mockup = useScrollReveal();
+  const featuresSection = useScrollReveal();
+  const feature0 = useScrollReveal();
+  const feature1 = useScrollReveal();
+  const feature2 = useScrollReveal();
+  const cta = useScrollReveal();
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto">
         <span className="text-xl font-bold tracking-tight text-foreground">
@@ -38,23 +54,36 @@ const Landing = () => {
       </nav>
 
       {/* Hero */}
-      <section className="flex flex-col items-center text-center px-6 pt-20 pb-24 max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-muted-foreground mb-8">
-          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-          Simple. Focused. Effective.
+      <section
+        ref={hero.ref}
+        className="flex flex-col items-center text-center px-6 pt-20 pb-24 max-w-3xl mx-auto"
+      >
+        <div
+          className={revealClasses(hero.isVisible)}
+        >
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-muted-foreground mb-8">
+            <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+            Simple. Focused. Effective.
+          </div>
         </div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.08]">
+        <h1
+          className={`text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.08] ${revealClasses(hero.isVisible, "delay-100")}`}
+        >
           Get things done,
           <br />
           <span className="text-primary">beautifully.</span>
         </h1>
 
-        <p className="mt-6 text-lg text-muted-foreground max-w-lg leading-relaxed">
+        <p
+          className={`mt-6 text-lg text-muted-foreground max-w-lg leading-relaxed ${revealClasses(hero.isVisible, "delay-200")}`}
+        >
           A minimalist todo app that gets out of your way. No clutter, no distractions — just you and your tasks.
         </p>
 
-        <div className="flex gap-3 mt-10">
+        <div
+          className={`flex gap-3 mt-10 ${revealClasses(hero.isVisible, "delay-300")}`}
+        >
           <button
             onClick={() => navigate("/auth")}
             className="group flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
@@ -66,7 +95,10 @@ const Landing = () => {
       </section>
 
       {/* Preview mockup */}
-      <section className="px-6 max-w-2xl mx-auto pb-24">
+      <section
+        ref={mockup.ref}
+        className={`px-6 max-w-2xl mx-auto pb-24 ${revealClasses(mockup.isVisible)}`}
+      >
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
           <div className="space-y-3">
             {["Design landing page", "Write documentation", "Ship v1.0"].map(
@@ -113,31 +145,43 @@ const Landing = () => {
 
       {/* Features */}
       <section className="px-6 pb-24 max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-foreground text-center mb-12">
-          Everything you need, nothing you don't.
-        </h2>
+        <div ref={featuresSection.ref}>
+          <h2
+            className={`text-2xl font-bold text-foreground text-center mb-12 ${revealClasses(featuresSection.isVisible)}`}
+          >
+            Everything you need, nothing you don't.
+          </h2>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-xl border border-border bg-card p-6 text-center"
-            >
-              <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
-                <f.icon className="h-5 w-5 text-accent-foreground" />
+          {features.map((f, i) => {
+            const refs = [feature0, feature1, feature2];
+            const r = refs[i];
+            return (
+              <div
+                key={f.title}
+                ref={r.ref}
+                className={`rounded-xl border border-border bg-card p-6 text-center ${revealClasses(r.isVisible, i === 1 ? "delay-100" : i === 2 ? "delay-200" : "")}`}
+              >
+                <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
+                  <f.icon className="h-5 w-5 text-accent-foreground" />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground mb-2">
+                  {f.title}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {f.description}
+                </p>
               </div>
-              <h3 className="text-sm font-semibold text-foreground mb-2">
-                {f.title}
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {f.description}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="px-6 pb-20 max-w-2xl mx-auto text-center">
+      <section
+        ref={cta.ref}
+        className={`px-6 pb-20 max-w-2xl mx-auto text-center ${revealClasses(cta.isVisible)}`}
+      >
         <div className="rounded-2xl border border-border bg-card p-10">
           <h2 className="text-2xl font-bold text-foreground mb-3">
             Ready to get organized?
