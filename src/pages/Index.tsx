@@ -86,8 +86,9 @@ const Index = () => {
   };
 
   const addTodo = async (text?: string) => {
-    const taskText = text || input.trim();
+    const taskText = (text || input.trim()).slice(0, 200);
     if (!taskText) return;
+    if (taskText.length < 1) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -252,13 +253,21 @@ const Index = () => {
 
         {/* Input */}
         <div className="flex gap-2 mb-6">
-          <input
-            className="w-[200px] rounded-lg border border-border bg-card px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Task"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addTodo()}
-          />
+          <div className="relative flex-1">
+            <input
+              className={`w-full rounded-lg border bg-card px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${input.length > 200 ? "border-destructive focus:ring-destructive" : "border-border"}`}
+              placeholder="Task"
+              value={input}
+              maxLength={250}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addTodo()}
+            />
+            {input.length > 150 && (
+              <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs ${input.length > 200 ? "text-destructive" : "text-muted-foreground"}`}>
+                {input.length}/200
+              </span>
+            )}
+          </div>
           <button
             onClick={() => addTodo()}
             className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground font-semibold shadow-lg hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200"
