@@ -58,6 +58,7 @@ export type Database = {
           category: string | null
           created_at: string
           done: boolean
+          due_date: string | null
           id: string
           position: number
           text: string
@@ -68,6 +69,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           done?: boolean
+          due_date?: string | null
           id?: string
           position?: number
           text: string
@@ -78,6 +80,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           done?: boolean
+          due_date?: string | null
           id?: string
           position?: number
           text?: string

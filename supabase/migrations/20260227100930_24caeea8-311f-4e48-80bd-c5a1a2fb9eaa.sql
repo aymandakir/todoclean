@@ -1,0 +1,1 @@
+ALTER TABLE public.todos ADD COLUMN due_date date DEFAULT null;
