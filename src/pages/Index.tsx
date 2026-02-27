@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { Moon, Sun, LogOut, Sparkles, Plus, X, Loader2 } from "lucide-react";
+import { Moon, Sun, LogOut, Sparkles, Plus, X, Loader2, CalendarIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 import {
   DndContext,
   closestCenter,
@@ -28,6 +32,7 @@ interface Todo {
   done: boolean;
   position: number;
   category?: string | null;
+  due_date?: string | null;
 }
 
 const Index = () => {
@@ -40,6 +45,7 @@ const Index = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -60,7 +66,7 @@ const Index = () => {
   const fetchTodos = async () => {
     const { data, error } = await supabase
       .from("todos")
-      .select("id, text, done, position, category")
+      .select("id, text, done, position, category, due_date")
       .order("position", { ascending: true });
 
     if (error) {
@@ -95,15 +101,15 @@ const Index = () => {
     const newPosition = todos.length;
     const { data, error } = await supabase
       .from("todos")
-      .insert({ text: taskText, user_id: user.id, position: newPosition } as any)
-      .select("id, text, done, position, category")
+      .insert({ text: taskText, user_id: user.id, position: newPosition, due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null } as any)
+      .select("id, text, done, position, category, due_date")
       .single();
 
     if (error) {
       toast({ title: "Error adding todo", description: error.message, variant: "destructive" });
     } else if (data) {
       setTodos((prev) => [...prev, data]);
-      if (!text) setInput("");
+      if (!text) { setInput(""); setDueDate(undefined); }
 
       // Auto-categorize in background
       supabase.functions
@@ -192,7 +198,6 @@ const Index = () => {
     const reordered = arrayMove(todos, oldIndex, newIndex).map((t, i) => ({ ...t, position: i }));
     setTodos(reordered);
 
-    // Persist new positions
     const updates = reordered.map((t) =>
       supabase.from("todos").update({ position: t.position }).eq("id", t.id)
     );
@@ -268,6 +273,39 @@ const Index = () => {
               </span>
             )}
           </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={cn(
+                  "rounded-lg border border-border bg-card p-2 text-foreground hover:bg-accent transition-colors",
+                  dueDate && "border-primary text-primary"
+                )}
+                aria-label="Set due date"
+              >
+                <CalendarIcon className="h-5 w-5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={dueDate}
+                onSelect={setDueDate}
+                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+              {dueDate && (
+                <div className="px-3 pb-3">
+                  <button
+                    onClick={() => setDueDate(undefined)}
+                    className="w-full text-xs text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    Clear date
+                  </button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
           <button
             onClick={() => addTodo()}
             className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground font-semibold shadow-lg hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200"
@@ -275,6 +313,11 @@ const Index = () => {
             Add
           </button>
         </div>
+        {dueDate && (
+          <p className="text-xs text-muted-foreground -mt-4 mb-4">
+            Due: {format(dueDate, "MMM d, yyyy")}
+          </p>
+        )}
 
         {/* Filter Tabs */}
         <div className="flex gap-1 mb-4 rounded-lg border border-border bg-card p-1">

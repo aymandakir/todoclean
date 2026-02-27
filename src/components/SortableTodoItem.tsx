@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { differenceInDays, parseISO, startOfDay } from "date-fns";
 
 interface Todo {
   id: string;
@@ -8,6 +9,7 @@ interface Todo {
   done: boolean;
   position: number;
   category?: string | null;
+  due_date?: string | null;
 }
 
 interface SortableTodoItemProps {
@@ -26,6 +28,25 @@ const categoryColors: Record<string, string> = {
   Other: "bg-muted text-muted-foreground",
 };
 
+function getDueDateInfo(dueDateStr: string | null | undefined, done: boolean) {
+  if (!dueDateStr || done) return null;
+  const today = startOfDay(new Date());
+  const due = startOfDay(parseISO(dueDateStr));
+  const diff = differenceInDays(due, today);
+
+  if (diff < 0)
+    return { label: "Overdue", className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" };
+  if (diff === 0)
+    return { label: "Today", className: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" };
+  if (diff === 1)
+    return { label: "Tomorrow", className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" };
+  if (diff <= 3)
+    return { label: `${diff}d`, className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" };
+  if (diff <= 7)
+    return { label: `${diff}d`, className: "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400" };
+  return { label: `${diff}d`, className: "bg-muted text-muted-foreground" };
+}
+
 const SortableTodoItem = ({ todo, onToggle, onDelete }: SortableTodoItemProps) => {
   const {
     attributes,
@@ -41,6 +62,8 @@ const SortableTodoItem = ({ todo, onToggle, onDelete }: SortableTodoItemProps) =
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
+
+  const dueInfo = getDueDateInfo(todo.due_date, todo.done);
 
   return (
     <li
@@ -77,6 +100,13 @@ const SortableTodoItem = ({ todo, onToggle, onDelete }: SortableTodoItemProps) =
             }`}
           >
             {todo.category}
+          </span>
+        )}
+        {dueInfo && (
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${dueInfo.className}`}
+          >
+            {dueInfo.label}
           </span>
         )}
       </div>
