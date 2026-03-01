@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useRef, forwardRef, useImperativeHandle } from "react";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -9,9 +9,18 @@ interface TodoInputProps {
   onAdd: (text: string, dueDate?: Date) => Promise<boolean | undefined>;
 }
 
-const TodoInput = memo(({ onAdd }: TodoInputProps) => {
+export interface TodoInputHandle {
+  focus: () => void;
+}
+
+const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) => {
   const [input, setInput] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+  }));
 
   const handleAdd = async () => {
     const text = input.trim();
@@ -28,6 +37,7 @@ const TodoInput = memo(({ onAdd }: TodoInputProps) => {
       <div className="flex gap-2">
         <div className="relative flex-1">
           <input
+            ref={inputRef}
             className={cn(
               "w-full rounded-lg border bg-card px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring border-border",
               input.length > 200 && "border-destructive focus:ring-destructive"

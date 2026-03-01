@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   DndContext,
@@ -15,13 +15,14 @@ import {
 } from "@dnd-kit/sortable";
 import SortableTodoItem from "@/components/SortableTodoItem";
 import TodoHeader from "@/components/TodoHeader";
-import TodoInput from "@/components/TodoInput";
+import TodoInput, { type TodoInputHandle } from "@/components/TodoInput";
 import FilterTabs from "@/components/FilterTabs";
 import CategoryFilter from "@/components/CategoryFilter";
 import TodoProgress from "@/components/TodoProgress";
 import { useTodos } from "@/hooks/use-todos";
 import { useSuggestions } from "@/hooks/use-suggestions";
 import { useProfile } from "@/hooks/use-profile";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 const AiSuggestions = lazy(() => import("@/components/AiSuggestions"));
 
@@ -29,6 +30,8 @@ const Index = () => {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+  const [showHelp, setShowHelp] = useState(false);
+  const inputRef = useRef<TodoInputHandle>(null);
 
   const { todos, loading, fetchTodos, addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted, handleDragEnd } = useTodos();
   const { displayName, avatarUrl, fetchProfile } = useProfile();
@@ -59,6 +62,17 @@ const Index = () => {
   const hasCompleted = useMemo(() => todos.some((t) => t.done), [todos]);
   const completedCount = useMemo(() => todos.filter((t) => t.done).length, [todos]);
 
+  const toggleDark = useCallback(() => setDark((d) => !d), []);
+  const focusInput = useCallback(() => inputRef.current?.focus(), []);
+  const toggleHelp = useCallback(() => setShowHelp((v) => !v), []);
+
+  useKeyboardShortcuts({
+    onFocusInput: focusInput,
+    onToggleDark: toggleDark,
+    onFilterChange: setFilter,
+    onShowHelp: toggleHelp,
+  });
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <main className="w-full max-w-md" role="main">
@@ -68,10 +82,12 @@ const Index = () => {
           displayName={displayName}
           avatarUrl={avatarUrl}
           dark={dark}
-          onToggleDark={() => setDark((d) => !d)}
+          onToggleDark={toggleDark}
+          showHelp={showHelp}
+          onShowHelpChange={setShowHelp}
         />
 
-        <TodoInput onAdd={addTodo} />
+        <TodoInput ref={inputRef} onAdd={addTodo} />
 
         <FilterTabs filter={filter} onFilterChange={setFilter} />
 
