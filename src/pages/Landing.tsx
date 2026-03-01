@@ -40,7 +40,7 @@ const Landing = () => {
   const cta = useScrollReveal();
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden" itemScope itemType="https://schema.org/WebApplication">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto">
         <Logo />
@@ -143,9 +143,10 @@ const Landing = () => {
       </section>
 
       {/* Features */}
-      <section className="px-6 pb-24 max-w-4xl mx-auto">
+      <section className="px-6 pb-24 max-w-4xl mx-auto" aria-labelledby="features-heading">
         <div ref={featuresSection.ref}>
           <h2
+            id="features-heading"
             className={`text-2xl font-bold text-foreground text-center mb-12 ${revealClasses(featuresSection.isVisible)}`}
           >
             Everything you need, nothing you don't.

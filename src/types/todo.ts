@@ -1,0 +1,8 @@
+export interface Todo {
+  id: string;
+  text: string;
+  done: boolean;
+  position: number;
+  category?: string | null;
+  due_date?: string | null;
+}
