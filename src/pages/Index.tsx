@@ -26,6 +26,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 const AiSuggestions = lazy(() => import("@/components/AiSuggestions"));
+const WeeklyProductivity = lazy(() => import("@/components/WeeklyProductivity"));
 
 const Index = () => {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
@@ -168,6 +169,10 @@ const Index = () => {
             onAdd={addSuggestion}
             onDismiss={dismissSuggestion}
           />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <WeeklyProductivity todos={todos} />
         </Suspense>
       </main>
     </div>

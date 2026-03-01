@@ -5,4 +5,5 @@ export interface Todo {
   position: number;
   category?: string | null;
   due_date?: string | null;
+  completed_at?: string | null;
 }
