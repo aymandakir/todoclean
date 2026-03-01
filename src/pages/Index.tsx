@@ -17,6 +17,7 @@ import SortableTodoItem from "@/components/SortableTodoItem";
 import TodoHeader from "@/components/TodoHeader";
 import TodoInput from "@/components/TodoInput";
 import FilterTabs from "@/components/FilterTabs";
+import CategoryFilter from "@/components/CategoryFilter";
 import TodoProgress from "@/components/TodoProgress";
 import { useTodos } from "@/hooks/use-todos";
 import { useSuggestions } from "@/hooks/use-suggestions";
@@ -26,6 +27,7 @@ const AiSuggestions = lazy(() => import("@/components/AiSuggestions"));
 
 const Index = () => {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   const { todos, loading, fetchTodos, addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted, handleDragEnd } = useTodos();
@@ -47,10 +49,12 @@ const Index = () => {
   }, [fetchTodos, fetchProfile]);
 
   const filteredTodos = useMemo(() => {
-    if (filter === "active") return todos.filter((t) => !t.done);
-    if (filter === "completed") return todos.filter((t) => t.done);
-    return todos;
-  }, [todos, filter]);
+    let result = todos;
+    if (filter === "active") result = result.filter((t) => !t.done);
+    if (filter === "completed") result = result.filter((t) => t.done);
+    if (categoryFilter) result = result.filter((t) => t.category === categoryFilter);
+    return result;
+  }, [todos, filter, categoryFilter]);
 
   const hasCompleted = useMemo(() => todos.some((t) => t.done), [todos]);
   const completedCount = useMemo(() => todos.filter((t) => t.done).length, [todos]);
@@ -70,6 +74,8 @@ const Index = () => {
         <TodoInput onAdd={addTodo} />
 
         <FilterTabs filter={filter} onFilterChange={setFilter} />
+
+        <CategoryFilter todos={todos} selectedCategory={categoryFilter} onCategoryChange={setCategoryFilter} />
 
         <TodoProgress total={todos.length} completed={completedCount} />
 
