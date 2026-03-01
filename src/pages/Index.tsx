@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import confetti from "canvas-confetti";
 import {
   DndContext,
   closestCenter,
@@ -61,6 +62,15 @@ const Index = () => {
 
   const hasCompleted = useMemo(() => todos.some((t) => t.done), [todos]);
   const completedCount = useMemo(() => todos.filter((t) => t.done).length, [todos]);
+  const prevAllDone = useRef(false);
+
+  useEffect(() => {
+    const allDone = todos.length > 0 && completedCount === todos.length;
+    if (allDone && !prevAllDone.current) {
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+    }
+    prevAllDone.current = allDone;
+  }, [todos.length, completedCount]);
 
   const toggleDark = useCallback(() => setDark((d) => !d), []);
   const focusInput = useCallback(() => inputRef.current?.focus(), []);
