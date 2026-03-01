@@ -17,6 +17,7 @@ import SortableTodoItem from "@/components/SortableTodoItem";
 import TodoHeader from "@/components/TodoHeader";
 import TodoInput from "@/components/TodoInput";
 import FilterTabs from "@/components/FilterTabs";
+import TodoProgress from "@/components/TodoProgress";
 import { useTodos } from "@/hooks/use-todos";
 import { useSuggestions } from "@/hooks/use-suggestions";
 import { useProfile } from "@/hooks/use-profile";
@@ -52,6 +53,7 @@ const Index = () => {
   }, [todos, filter]);
 
   const hasCompleted = useMemo(() => todos.some((t) => t.done), [todos]);
+  const completedCount = useMemo(() => todos.filter((t) => t.done).length, [todos]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -68,6 +70,8 @@ const Index = () => {
         <TodoInput onAdd={addTodo} />
 
         <FilterTabs filter={filter} onFilterChange={setFilter} />
+
+        <TodoProgress total={todos.length} completed={completedCount} />
 
         {/* Task List */}
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
