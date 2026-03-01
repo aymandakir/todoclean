@@ -1,16 +1,9 @@
+import { memo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
-
-interface Todo {
-  id: string;
-  text: string;
-  done: boolean;
-  position: number;
-  category?: string | null;
-  due_date?: string | null;
-}
+import type { Todo } from "@/types/todo";
 
 interface SortableTodoItemProps {
   todo: Todo;
@@ -47,7 +40,7 @@ function getDueDateInfo(dueDateStr: string | null | undefined, done: boolean) {
   return { label: `${diff}d`, className: "bg-muted text-muted-foreground" };
 }
 
-const SortableTodoItem = ({ todo, onToggle, onDelete }: SortableTodoItemProps) => {
+const SortableTodoItem = memo(({ todo, onToggle, onDelete }: SortableTodoItemProps) => {
   const {
     attributes,
     listeners,
@@ -118,6 +111,7 @@ const SortableTodoItem = ({ todo, onToggle, onDelete }: SortableTodoItemProps) =
       </button>
     </li>
   );
-};
+});
 
+SortableTodoItem.displayName = "SortableTodoItem";
 export default SortableTodoItem;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,13 +6,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
-import Onboarding from "./pages/Onboarding";
-import ResetPassword from "./pages/ResetPassword";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
+
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Profile = lazy(() => import("./pages/Profile"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -83,37 +84,39 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={session ? <Navigate to="/app" replace /> : <Landing />} />
-            <Route
-              path="/app"
-              element={
-                session ? (
-                  <ProtectedRoute session={session}>
-                    <Index />
-                  </ProtectedRoute>
-                ) : (
-                  <Navigate to="/auth" replace />
-                )
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                session ? (
-                  <ProtectedRoute session={session}>
-                    <Profile />
-                  </ProtectedRoute>
-                ) : (
-                  <Navigate to="/auth" replace />
-                )
-              }
-            />
-            <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/auth" replace />} />
-            <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/app" replace />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Loading…</p></div>}>
+            <Routes>
+              <Route path="/" element={session ? <Navigate to="/app" replace /> : <Landing />} />
+              <Route
+                path="/app"
+                element={
+                  session ? (
+                    <ProtectedRoute session={session}>
+                      <Index />
+                    </ProtectedRoute>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  session ? (
+                    <ProtectedRoute session={session}>
+                      <Profile />
+                    </ProtectedRoute>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
+              <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/auth" replace />} />
+              <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/app" replace />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
