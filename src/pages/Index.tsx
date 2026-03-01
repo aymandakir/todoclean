@@ -26,7 +26,7 @@ const Index = () => {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
 
-  const { todos, loading, fetchTodos, addTodo, toggleTodo, deleteTodo, clearCompleted, handleDragEnd } = useTodos();
+  const { todos, loading, fetchTodos, addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted, handleDragEnd } = useTodos();
   const { displayName, avatarUrl, fetchProfile } = useProfile();
   const { suggestions, loading: loadingSuggestions, fetchSuggestions, addSuggestion, dismissSuggestion } = useSuggestions(todos, addTodo);
 
@@ -86,6 +86,7 @@ const Index = () => {
                   todo={todo}
                   onToggle={toggleTodo}
                   onDelete={deleteTodo}
+                  onUpdate={updateTodo}
                 />
               ))}
             </ul>

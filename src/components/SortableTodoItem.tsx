@@ -1,14 +1,18 @@
-import { memo } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
-import { differenceInDays, parseISO, startOfDay } from "date-fns";
+import { GripVertical, CalendarIcon, X } from "lucide-react";
+import { differenceInDays, parseISO, startOfDay, format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import type { Todo } from "@/types/todo";
 
 interface SortableTodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: { text?: string; due_date?: string | null }) => Promise<boolean>;
 }
 
 const categoryColors: Record<string, string> = {
@@ -40,7 +44,11 @@ function getDueDateInfo(dueDateStr: string | null | undefined, done: boolean) {
   return { label: `${diff}d`, className: "bg-muted text-muted-foreground" };
 }
 
-const SortableTodoItem = memo(({ todo, onToggle, onDelete }: SortableTodoItemProps) => {
+const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate }: SortableTodoItemProps) => {
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(todo.text);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const {
     attributes,
     listeners,
@@ -58,11 +66,34 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete }: SortableTodoItemPro
 
   const dueInfo = getDueDateInfo(todo.due_date, todo.done);
 
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  const saveText = async () => {
+    const trimmed = editText.trim().slice(0, 200);
+    setEditing(false);
+    if (!trimmed || trimmed === todo.text) {
+      setEditText(todo.text);
+      return;
+    }
+    const success = await onUpdate(todo.id, { text: trimmed });
+    if (!success) setEditText(todo.text);
+  };
+
+  const handleDateSelect = async (date: Date | undefined) => {
+    const due_date = date ? format(date, "yyyy-MM-dd") : null;
+    await onUpdate(todo.id, { due_date });
+  };
+
   return (
     <li
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3"
+      className="group/item flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3"
     >
       <button
         className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
@@ -79,14 +110,34 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete }: SortableTodoItemPro
         className="h-4 w-4 accent-primary cursor-pointer"
       />
       <div className="flex-1 flex items-center gap-2 min-w-0">
-        <span
-          className={`text-xs text-muted-foreground truncate ${
-            todo.done ? "line-through opacity-50" : ""
-          }`}
-        >
-          {todo.text}
-        </span>
-        {todo.category && (
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={editText}
+            maxLength={250}
+            onChange={(e) => setEditText(e.target.value)}
+            onBlur={saveText}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") saveText();
+              if (e.key === "Escape") { setEditText(todo.text); setEditing(false); }
+            }}
+            className="flex-1 text-xs bg-transparent border-b border-primary/50 text-foreground outline-none py-0.5"
+          />
+        ) : (
+          <span
+            onClick={() => !todo.done && setEditing(true)}
+            className={cn(
+              "text-xs truncate",
+              todo.done
+                ? "line-through text-muted-foreground opacity-50"
+                : "text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+            )}
+            title={todo.done ? undefined : "Click to edit"}
+          >
+            {todo.text}
+          </span>
+        )}
+        {todo.category && !editing && (
           <span
             className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
               categoryColors[todo.category] || categoryColors.Other
@@ -95,12 +146,46 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete }: SortableTodoItemPro
             {todo.category}
           </span>
         )}
-        {dueInfo && (
-          <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${dueInfo.className}`}
-          >
-            {dueInfo.label}
-          </span>
+        {!editing && (
+          <Popover>
+            <PopoverTrigger asChild>
+              {dueInfo ? (
+                <button
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer hover:opacity-80 transition-opacity ${dueInfo.className}`}
+                  aria-label="Edit due date"
+                >
+                  {dueInfo.label}
+                </button>
+              ) : (
+                <button
+                  className="shrink-0 text-muted-foreground/40 hover:text-muted-foreground transition-colors opacity-0 group-hover/item:opacity-100"
+                  aria-label="Add due date"
+                >
+                  <CalendarIcon className="h-3 w-3" />
+                </button>
+              )}
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={todo.due_date ? parseISO(todo.due_date) : undefined}
+                onSelect={handleDateSelect}
+                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+              {todo.due_date && (
+                <div className="px-3 pb-3">
+                  <button
+                    onClick={() => onUpdate(todo.id, { due_date: null })}
+                    className="w-full text-xs text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    Remove due date
+                  </button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
         )}
       </div>
       <button

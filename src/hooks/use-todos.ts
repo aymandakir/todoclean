@@ -96,6 +96,20 @@ export function useTodos() {
     }
   }, []);
 
+  const updateTodo = useCallback(async (id: string, updates: { text?: string; due_date?: string | null }) => {
+    const { error } = await supabase
+      .from("todos")
+      .update(updates)
+      .eq("id", id);
+
+    if (error) {
+      toast({ title: "Error updating todo", description: error.message, variant: "destructive" });
+      return false;
+    }
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+    return true;
+  }, [toast]);
+
   const clearCompleted = useCallback(async () => {
     const completedIds = todos.filter((t) => t.done).map((t) => t.id);
     const { error } = await supabase.from("todos").delete().in("id", completedIds);
@@ -126,6 +140,7 @@ export function useTodos() {
     addTodo,
     toggleTodo,
     deleteTodo,
+    updateTodo,
     clearCompleted,
     handleDragEnd,
   };
