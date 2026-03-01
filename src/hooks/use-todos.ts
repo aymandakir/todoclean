@@ -14,7 +14,7 @@ export function useTodos() {
   const fetchTodos = useCallback(async () => {
     const { data, error } = await supabase
       .from("todos")
-      .select("id, text, done, position, category, due_date")
+      .select("id, text, done, position, category, due_date, completed_at")
       .order("position", { ascending: true });
 
     if (error) {
@@ -41,7 +41,7 @@ export function useTodos() {
         position: newPosition,
         due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       } as any)
-      .select("id, text, done, position, category, due_date")
+      .select("id, text, done, position, category, due_date, completed_at")
       .single();
 
     if (error) {
@@ -79,13 +79,15 @@ export function useTodos() {
     const todo = todos.find((t) => t.id === id);
     if (!todo) return;
 
+    const newDone = !todo.done;
+    const completed_at = newDone ? new Date().toISOString() : null;
     const { error } = await supabase
       .from("todos")
-      .update({ done: !todo.done })
+      .update({ done: newDone, completed_at } as any)
       .eq("id", id);
 
     if (!error) {
-      setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+      setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, done: newDone, completed_at } : t)));
     }
   }, [todos]);
 
