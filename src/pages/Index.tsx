@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   DndContext,
   closestCenter,
@@ -73,22 +74,43 @@ const Index = () => {
           <SortableContext items={filteredTodos.map((t) => t.id)} strategy={verticalListSortingStrategy}>
             <ul className="space-y-2" aria-label="Task list">
               {loading && (
-                <p className="text-center text-muted-foreground py-8" aria-live="polite">Loading…</p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center text-muted-foreground py-8"
+                  aria-live="polite"
+                >
+                  Loading…
+                </motion.p>
               )}
               {!loading && filteredTodos.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center text-muted-foreground py-8"
+                >
                   {filter === "all" ? "No tasks yet. Add one above!" : `No ${filter} tasks.`}
-                </p>
+                </motion.p>
               )}
-              {filteredTodos.map((todo) => (
-                <SortableTodoItem
-                  key={todo.id}
-                  todo={todo}
-                  onToggle={toggleTodo}
-                  onDelete={deleteTodo}
-                  onUpdate={updateTodo}
-                />
-              ))}
+              <AnimatePresence initial={false}>
+                {filteredTodos.map((todo) => (
+                  <motion.div
+                    key={todo.id}
+                    layout
+                    initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, height: "auto", scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    <SortableTodoItem
+                      todo={todo}
+                      onToggle={toggleTodo}
+                      onDelete={deleteTodo}
+                      onUpdate={updateTodo}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </ul>
           </SortableContext>
         </DndContext>
