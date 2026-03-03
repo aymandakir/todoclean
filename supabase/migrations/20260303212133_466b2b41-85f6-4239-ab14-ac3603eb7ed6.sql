@@ -1,0 +1,1 @@
+ALTER TABLE public.todos ADD COLUMN priority text DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high'));
