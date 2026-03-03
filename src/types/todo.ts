@@ -1,4 +1,5 @@
 export type Priority = "low" | "medium" | "high";
+export type Recurrence = "daily" | "weekly" | "monthly";
 
 export interface Todo {
   id: string;
@@ -9,4 +10,5 @@ export interface Todo {
   due_date?: string | null;
   completed_at?: string | null;
   priority: Priority;
+  recurrence?: Recurrence | null;
 }

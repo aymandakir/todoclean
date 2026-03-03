@@ -1,18 +1,18 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, CalendarIcon, X } from "lucide-react";
+import { GripVertical, CalendarIcon, X, Repeat } from "lucide-react";
 import { differenceInDays, parseISO, startOfDay, format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import type { Todo, Priority } from "@/types/todo";
+import type { Todo, Priority, Recurrence } from "@/types/todo";
 
 interface SortableTodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onUpdate: (id: string, updates: { text?: string; due_date?: string | null; priority?: Priority }) => Promise<boolean>;
+  onUpdate: (id: string, updates: { text?: string; due_date?: string | null; priority?: Priority; recurrence?: Recurrence | null }) => Promise<boolean>;
 }
 
 const categoryColors: Record<string, string> = {
@@ -164,6 +164,15 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate }: SortableT
             }`}
           >
             {todo.category}
+          </span>
+        )}
+        {todo.recurrence && !editing && (
+          <span
+            className="shrink-0 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium bg-accent text-accent-foreground"
+            title={`Repeats ${todo.recurrence}`}
+          >
+            <Repeat className="h-2.5 w-2.5" />
+            {todo.recurrence.charAt(0).toUpperCase()}
           </span>
         )}
         {!editing && (

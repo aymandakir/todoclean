@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import type { Todo } from "@/types/todo";
+import { format, addDays, addWeeks, addMonths, parseISO } from "date-fns";
+import type { Todo, Recurrence } from "@/types/todo";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 
@@ -14,7 +14,7 @@ export function useTodos() {
   const fetchTodos = useCallback(async () => {
     const { data, error } = await supabase
       .from("todos")
-      .select("id, text, done, position, category, due_date, completed_at, priority")
+      .select("id, text, done, position, category, due_date, completed_at, priority, recurrence")
       .order("position", { ascending: true });
 
     if (error) {
@@ -25,7 +25,7 @@ export function useTodos() {
     setLoading(false);
   }, [toast]);
 
-  const addTodo = useCallback(async (text: string, dueDate?: Date, priority: import("@/types/todo").Priority = "medium") => {
+  const addTodo = useCallback(async (text: string, dueDate?: Date, priority: import("@/types/todo").Priority = "medium", recurrence?: Recurrence | null) => {
     const taskText = text.slice(0, 200);
     if (!taskText) return;
 
@@ -41,8 +41,9 @@ export function useTodos() {
         position: newPosition,
         due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
         priority,
+        recurrence: recurrence || null,
       } as any)
-      .select("id, text, done, position, category, due_date, completed_at, priority")
+      .select("id, text, done, position, category, due_date, completed_at, priority, recurrence")
       .single();
 
     if (error) {
@@ -89,8 +90,40 @@ export function useTodos() {
 
     if (!error) {
       setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, done: newDone, completed_at } : t)));
+
+      // Auto-recreate recurring task when completed
+      if (newDone && todo.recurrence) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const baseDate = todo.due_date ? parseISO(todo.due_date) : new Date();
+        let nextDate: Date;
+        if (todo.recurrence === "daily") nextDate = addDays(baseDate, 1);
+        else if (todo.recurrence === "weekly") nextDate = addWeeks(baseDate, 1);
+        else nextDate = addMonths(baseDate, 1);
+
+        const newPosition = todos.length;
+        const { data: newTodo } = await supabase
+          .from("todos")
+          .insert({
+            text: todo.text,
+            user_id: user.id,
+            position: newPosition,
+            due_date: format(nextDate, "yyyy-MM-dd"),
+            priority: todo.priority,
+            recurrence: todo.recurrence,
+            category: todo.category,
+          } as any)
+          .select("id, text, done, position, category, due_date, completed_at, priority, recurrence")
+          .single();
+
+        if (newTodo) {
+          setTodos((prev) => [...prev, newTodo as unknown as Todo]);
+          toast({ title: "Recurring task created", description: `Next: ${format(nextDate, "MMM d, yyyy")}` });
+        }
+      }
     }
-  }, [todos]);
+  }, [todos, toast]);
 
   const deleteTodo = useCallback(async (id: string) => {
     const { error } = await supabase.from("todos").delete().eq("id", id);
@@ -99,7 +132,7 @@ export function useTodos() {
     }
   }, []);
 
-  const updateTodo = useCallback(async (id: string, updates: { text?: string; due_date?: string | null; priority?: import("@/types/todo").Priority }) => {
+  const updateTodo = useCallback(async (id: string, updates: { text?: string; due_date?: string | null; priority?: import("@/types/todo").Priority; recurrence?: Recurrence | null }) => {
     const { error } = await supabase
       .from("todos")
       .update(updates)
