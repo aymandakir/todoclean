@@ -1,0 +1,1 @@
+ALTER TABLE public.todos ADD COLUMN recurrence text DEFAULT NULL CHECK (recurrence IN ('daily', 'weekly', 'monthly'));

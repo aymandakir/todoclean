@@ -4,16 +4,23 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import type { Priority } from "@/types/todo";
+import type { Priority, Recurrence } from "@/types/todo";
+import { Repeat } from "lucide-react";
 
 interface TodoInputProps {
-  onAdd: (text: string, dueDate?: Date, priority?: Priority) => Promise<boolean | undefined>;
+  onAdd: (text: string, dueDate?: Date, priority?: Priority, recurrence?: Recurrence | null) => Promise<boolean | undefined>;
 }
 
 const priorityOptions: { value: Priority; dot: string; label: string }[] = [
   { value: "low", dot: "bg-emerald-400", label: "Low" },
   { value: "medium", dot: "bg-amber-400", label: "Med" },
   { value: "high", dot: "bg-red-400", label: "High" },
+];
+
+const recurrenceOptions: { value: Recurrence; label: string }[] = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
 ];
 
 export interface TodoInputHandle {
@@ -24,6 +31,7 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
   const [input, setInput] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [priority, setPriority] = useState<Priority>("medium");
+  const [recurrence, setRecurrence] = useState<Recurrence | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useImperativeHandle(ref, () => ({
@@ -33,11 +41,12 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
   const handleAdd = async () => {
     const text = input.trim();
     if (!text || text.length < 1) return;
-    const success = await onAdd(text, dueDate, priority);
+    const success = await onAdd(text, dueDate, priority, recurrence);
     if (success) {
       setInput("");
       setDueDate(undefined);
       setPriority("medium");
+      setRecurrence(null);
     }
   };
 
@@ -110,7 +119,7 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
           Add
         </button>
       </div>
-      <div className="flex items-center gap-4 mt-2">
+      <div className="flex items-center gap-4 mt-2 flex-wrap">
         <div className="flex items-center gap-1">
           {priorityOptions.map((p) => (
             <button
@@ -125,6 +134,23 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
             >
               <span className={cn("h-2 w-2 rounded-full", p.dot)} />
               {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1">
+          <Repeat className="h-3 w-3 text-muted-foreground" />
+          {recurrenceOptions.map((r) => (
+            <button
+              key={r.value}
+              onClick={() => setRecurrence(recurrence === r.value ? null : r.value)}
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[11px] font-medium transition-all",
+                recurrence === r.value
+                  ? "bg-accent text-accent-foreground ring-1 ring-ring"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {r.label}
             </button>
           ))}
         </div>
