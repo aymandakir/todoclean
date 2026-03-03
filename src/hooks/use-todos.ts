@@ -14,18 +14,18 @@ export function useTodos() {
   const fetchTodos = useCallback(async () => {
     const { data, error } = await supabase
       .from("todos")
-      .select("id, text, done, position, category, due_date, completed_at")
+      .select("id, text, done, position, category, due_date, completed_at, priority")
       .order("position", { ascending: true });
 
     if (error) {
       toast({ title: "Error loading todos", description: error.message, variant: "destructive" });
     } else {
-      setTodos(data || []);
+      setTodos((data as unknown as Todo[]) || []);
     }
     setLoading(false);
   }, [toast]);
 
-  const addTodo = useCallback(async (text: string, dueDate?: Date) => {
+  const addTodo = useCallback(async (text: string, dueDate?: Date, priority: import("@/types/todo").Priority = "medium") => {
     const taskText = text.slice(0, 200);
     if (!taskText) return;
 
@@ -40,8 +40,9 @@ export function useTodos() {
         user_id: user.id,
         position: newPosition,
         due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
+        priority,
       } as any)
-      .select("id, text, done, position, category, due_date, completed_at")
+      .select("id, text, done, position, category, due_date, completed_at, priority")
       .single();
 
     if (error) {
@@ -50,7 +51,7 @@ export function useTodos() {
     }
 
     if (data) {
-      setTodos((prev) => [...prev, data]);
+      setTodos((prev) => [...prev, data as unknown as Todo]);
 
       // Auto-categorize in background
       supabase.functions
@@ -98,7 +99,7 @@ export function useTodos() {
     }
   }, []);
 
-  const updateTodo = useCallback(async (id: string, updates: { text?: string; due_date?: string | null }) => {
+  const updateTodo = useCallback(async (id: string, updates: { text?: string; due_date?: string | null; priority?: import("@/types/todo").Priority }) => {
     const { error } = await supabase
       .from("todos")
       .update(updates)

@@ -6,13 +6,13 @@ import { differenceInDays, parseISO, startOfDay, format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import type { Todo } from "@/types/todo";
+import type { Todo, Priority } from "@/types/todo";
 
 interface SortableTodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onUpdate: (id: string, updates: { text?: string; due_date?: string | null }) => Promise<boolean>;
+  onUpdate: (id: string, updates: { text?: string; due_date?: string | null; priority?: Priority }) => Promise<boolean>;
 }
 
 const categoryColors: Record<string, string> = {
@@ -24,6 +24,14 @@ const categoryColors: Record<string, string> = {
   Shopping: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",
   Other: "bg-muted text-muted-foreground",
 };
+
+const priorityConfig: Record<Priority, { dot: string; label: string }> = {
+  low: { dot: "bg-emerald-400", label: "Low" },
+  medium: { dot: "bg-amber-400", label: "Medium" },
+  high: { dot: "bg-red-400", label: "High" },
+};
+
+const priorityOrder: Priority[] = ["low", "medium", "high"];
 
 function getDueDateInfo(dueDateStr: string | null | undefined, done: boolean) {
   if (!dueDateStr || done) return null;
@@ -102,6 +110,18 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate }: SortableT
         aria-label="Drag to reorder"
       >
         <GripVertical className="h-4 w-4" />
+      </button>
+      <button
+        onClick={() => {
+          const currentIdx = priorityOrder.indexOf(todo.priority);
+          const next = priorityOrder[(currentIdx + 1) % priorityOrder.length];
+          onUpdate(todo.id, { priority: next });
+        }}
+        className="shrink-0 group/priority"
+        title={`Priority: ${priorityConfig[todo.priority].label} — click to cycle`}
+        aria-label={`Priority: ${priorityConfig[todo.priority].label}`}
+      >
+        <span className={cn("block h-2.5 w-2.5 rounded-full transition-colors", priorityConfig[todo.priority].dot)} />
       </button>
       <input
         type="checkbox"

@@ -4,10 +4,17 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import type { Priority } from "@/types/todo";
 
 interface TodoInputProps {
-  onAdd: (text: string, dueDate?: Date) => Promise<boolean | undefined>;
+  onAdd: (text: string, dueDate?: Date, priority?: Priority) => Promise<boolean | undefined>;
 }
+
+const priorityOptions: { value: Priority; dot: string; label: string }[] = [
+  { value: "low", dot: "bg-emerald-400", label: "Low" },
+  { value: "medium", dot: "bg-amber-400", label: "Med" },
+  { value: "high", dot: "bg-red-400", label: "High" },
+];
 
 export interface TodoInputHandle {
   focus: () => void;
@@ -16,6 +23,7 @@ export interface TodoInputHandle {
 const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) => {
   const [input, setInput] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [priority, setPriority] = useState<Priority>("medium");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useImperativeHandle(ref, () => ({
@@ -25,10 +33,11 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
   const handleAdd = async () => {
     const text = input.trim();
     if (!text || text.length < 1) return;
-    const success = await onAdd(text, dueDate);
+    const success = await onAdd(text, dueDate, priority);
     if (success) {
       setInput("");
       setDueDate(undefined);
+      setPriority("medium");
     }
   };
 
@@ -101,11 +110,30 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
           Add
         </button>
       </div>
-      {dueDate && (
-        <p className="text-xs text-muted-foreground mt-2">
-          Due: {format(dueDate, "MMM d, yyyy")}
-        </p>
-      )}
+      <div className="flex items-center gap-4 mt-2">
+        <div className="flex items-center gap-1">
+          {priorityOptions.map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setPriority(p.value)}
+              className={cn(
+                "flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium transition-all",
+                priority === p.value
+                  ? "bg-secondary text-foreground ring-1 ring-ring"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <span className={cn("h-2 w-2 rounded-full", p.dot)} />
+              {p.label}
+            </button>
+          ))}
+        </div>
+        {dueDate && (
+          <p className="text-xs text-muted-foreground">
+            Due: {format(dueDate, "MMM d, yyyy")}
+          </p>
+        )}
+      </div>
     </div>
   );
 });
