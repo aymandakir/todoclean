@@ -110,6 +110,8 @@ const Index = () => {
 
         <CategoryFilter todos={todos} selectedCategory={categoryFilter} onCategoryChange={setCategoryFilter} />
 
+        <TodoSearch value={searchQuery} onChange={setSearchQuery} />
+
         <TodoProgress total={todos.length} completed={completedCount} />
 
         {/* Task List */}
