@@ -20,6 +20,7 @@ import TodoInput, { type TodoInputHandle } from "@/components/TodoInput";
 import FilterTabs from "@/components/FilterTabs";
 import CategoryFilter from "@/components/CategoryFilter";
 import TodoProgress from "@/components/TodoProgress";
+import TodoSearch from "@/components/TodoSearch";
 import { useTodos } from "@/hooks/use-todos";
 import { useSuggestions } from "@/hooks/use-suggestions";
 import { useProfile } from "@/hooks/use-profile";
