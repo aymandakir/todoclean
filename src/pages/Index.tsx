@@ -60,8 +60,12 @@ const Index = () => {
     if (filter === "active") result = result.filter((t) => !t.done);
     if (filter === "completed") result = result.filter((t) => t.done);
     if (categoryFilter) result = result.filter((t) => t.category === categoryFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter((t) => t.text.toLowerCase().includes(q));
+    }
     return result;
-  }, [todos, filter, categoryFilter]);
+  }, [todos, filter, categoryFilter, searchQuery]);
 
   const hasCompleted = useMemo(() => todos.some((t) => t.done), [todos]);
   const completedCount = useMemo(() => todos.filter((t) => t.done).length, [todos]);
