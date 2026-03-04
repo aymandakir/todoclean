@@ -166,14 +166,54 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate }: SortableT
             {todo.category}
           </span>
         )}
-        {todo.recurrence && !editing && (
-          <span
-            className="shrink-0 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium bg-accent text-accent-foreground"
-            title={`Repeats ${todo.recurrence}`}
-          >
-            <Repeat className="h-2.5 w-2.5" />
-            {todo.recurrence.charAt(0).toUpperCase()}
-          </span>
+      {!editing && (
+          <Popover>
+            <PopoverTrigger asChild>
+              {todo.recurrence ? (
+                <button
+                  className="shrink-0 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium bg-accent text-accent-foreground hover:opacity-80 transition-opacity cursor-pointer"
+                  title={`Repeats ${todo.recurrence} — click to change`}
+                >
+                  <Repeat className="h-2.5 w-2.5" />
+                  {todo.recurrence.charAt(0).toUpperCase()}
+                </button>
+              ) : (
+                <button
+                  className="shrink-0 text-muted-foreground/40 hover:text-muted-foreground transition-colors opacity-0 group-hover/item:opacity-100"
+                  aria-label="Add recurrence"
+                >
+                  <Repeat className="h-3 w-3" />
+                </button>
+              )}
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2" align="end">
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-medium text-muted-foreground px-1 pb-1">Repeat</p>
+                {(["daily", "weekly", "monthly"] as Recurrence[]).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => onUpdate(todo.id, { recurrence: r })}
+                    className={cn(
+                      "text-xs px-3 py-1.5 rounded-md text-left transition-colors",
+                      todo.recurrence === r
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-accent"
+                    )}
+                  >
+                    {r.charAt(0).toUpperCase() + r.slice(1)}
+                  </button>
+                ))}
+                {todo.recurrence && (
+                  <button
+                    onClick={() => onUpdate(todo.id, { recurrence: null })}
+                    className="text-xs px-3 py-1.5 rounded-md text-left text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
         )}
         {!editing && (
           <Popover>
