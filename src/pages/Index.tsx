@@ -20,6 +20,7 @@ import TodoInput, { type TodoInputHandle } from "@/components/TodoInput";
 import FilterTabs from "@/components/FilterTabs";
 import CategoryFilter from "@/components/CategoryFilter";
 import TodoProgress from "@/components/TodoProgress";
+import TodoSearch from "@/components/TodoSearch";
 import { useTodos } from "@/hooks/use-todos";
 import { useSuggestions } from "@/hooks/use-suggestions";
 import { useProfile } from "@/hooks/use-profile";
@@ -31,6 +32,7 @@ const WeeklyProductivity = lazy(() => import("@/components/WeeklyProductivity"))
 const Index = () => {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [showHelp, setShowHelp] = useState(false);
   const inputRef = useRef<TodoInputHandle>(null);
@@ -58,8 +60,12 @@ const Index = () => {
     if (filter === "active") result = result.filter((t) => !t.done);
     if (filter === "completed") result = result.filter((t) => t.done);
     if (categoryFilter) result = result.filter((t) => t.category === categoryFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter((t) => t.text.toLowerCase().includes(q));
+    }
     return result;
-  }, [todos, filter, categoryFilter]);
+  }, [todos, filter, categoryFilter, searchQuery]);
 
   const hasCompleted = useMemo(() => todos.some((t) => t.done), [todos]);
   const completedCount = useMemo(() => todos.filter((t) => t.done).length, [todos]);
@@ -103,6 +109,8 @@ const Index = () => {
         <FilterTabs filter={filter} onFilterChange={setFilter} />
 
         <CategoryFilter todos={todos} selectedCategory={categoryFilter} onCategoryChange={setCategoryFilter} />
+
+        <TodoSearch value={searchQuery} onChange={setSearchQuery} />
 
         <TodoProgress total={todos.length} completed={completedCount} />
 
