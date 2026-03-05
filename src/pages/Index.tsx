@@ -154,6 +154,11 @@ const Index = () => {
                       onToggle={toggleTodo}
                       onDelete={deleteTodo}
                       onUpdate={updateTodo}
+                      subtasks={subtasksByTodo[todo.id]}
+                      onFetchSubtasks={fetchSubtasks}
+                      onAddSubtask={addSubtask}
+                      onToggleSubtask={toggleSubtask}
+                      onDeleteSubtask={deleteSubtask}
                     />
                   </motion.div>
                 ))}
