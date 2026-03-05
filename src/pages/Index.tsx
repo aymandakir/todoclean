@@ -129,7 +129,7 @@ const Index = () => {
         <TodoProgress total={todos.length} completed={completedCount} />
 
         {/* Task List */}
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sortBy === "manual" ? sensors : []} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={filteredTodos.map((t) => t.id)} strategy={verticalListSortingStrategy}>
             <ul className="space-y-2" aria-label="Task list">
               {loading && (
@@ -171,6 +171,7 @@ const Index = () => {
                       onAddSubtask={addSubtask}
                       onToggleSubtask={toggleSubtask}
                       onDeleteSubtask={deleteSubtask}
+                      isDragDisabled={sortBy !== "manual"}
                     />
                   </motion.div>
                 ))}

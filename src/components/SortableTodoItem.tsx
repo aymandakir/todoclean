@@ -20,6 +20,7 @@ interface SortableTodoItemProps {
   onAddSubtask?: (todoId: string, text: string) => Promise<void>;
   onToggleSubtask?: (todoId: string, subtaskId: string) => Promise<void>;
   onDeleteSubtask?: (todoId: string, subtaskId: string) => Promise<void>;
+  isDragDisabled?: boolean;
 }
 
 const categoryColors: Record<string, string> = {
@@ -59,7 +60,7 @@ function getDueDateInfo(dueDateStr: string | null | undefined, done: boolean) {
   return { label: `${diff}d`, className: "bg-muted text-muted-foreground" };
 }
 
-const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate, subtasks, onFetchSubtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask }: SortableTodoItemProps) => {
+const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate, subtasks, onFetchSubtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask, isDragDisabled }: SortableTodoItemProps) => {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(todo.text);
   const [expanded, setExpanded] = useState(false);
@@ -119,14 +120,16 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate, subtasks, o
       className="group/item rounded-lg border border-border bg-card"
     >
       <div className="flex items-center gap-3 px-4 py-3">
-        <button
-          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to reorder"
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
+        {!isDragDisabled && (
+          <button
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
+            {...attributes}
+            {...listeners}
+            aria-label="Drag to reorder"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        )}
         <button
           onClick={() => {
             const currentIdx = priorityOrder.indexOf(todo.priority);
