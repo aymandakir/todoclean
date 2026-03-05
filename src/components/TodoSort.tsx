@@ -16,9 +16,9 @@ const options: { value: SortOption; label: string }[] = [
 ];
 
 const TodoSort = ({ value, onChange }: TodoSortProps) => (
-  <div className="flex items-center gap-1.5 mb-3">
+  <div className="flex items-center gap-1 shrink-0">
     <ArrowUpDown className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-    <div className="flex gap-1 flex-wrap">
+    <div className="flex gap-1">
       {options.map((opt) => (
         <button
           key={opt.value}

@@ -10,7 +10,7 @@ const TodoSearch = ({ value, onChange }: TodoSearchProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="relative mb-3">
+    <div className="relative">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
       <input
         ref={inputRef}
