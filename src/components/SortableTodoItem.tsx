@@ -73,7 +73,7 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate, subtasks, o
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: todo.id });
+  } = useSortable({ id: todo.id, disabled: !!isDragDisabled });
 
   const style = {
     transform: CSS.Transform.toString(transform),
