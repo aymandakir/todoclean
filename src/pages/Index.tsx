@@ -171,6 +171,7 @@ const Index = () => {
                       onAddSubtask={addSubtask}
                       onToggleSubtask={toggleSubtask}
                       onDeleteSubtask={deleteSubtask}
+                      isDragDisabled={sortBy !== "manual"}
                     />
                   </motion.div>
                 ))}
