@@ -33,6 +33,7 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [priority, setPriority] = useState<Priority>("medium");
   const [recurrence, setRecurrence] = useState<Recurrence | null>(null);
+  const [showOptions, setShowOptions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useImperativeHandle(ref, () => ({
