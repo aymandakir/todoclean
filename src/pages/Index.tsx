@@ -18,22 +18,16 @@ import SortableTodoItem from "@/components/SortableTodoItem";
 import TodoHeader from "@/components/TodoHeader";
 import TodoInput, { type TodoInputHandle } from "@/components/TodoInput";
 import FilterTabs from "@/components/FilterTabs";
-import CategoryFilter from "@/components/CategoryFilter";
 import TodoProgress from "@/components/TodoProgress";
 import TodoSearch from "@/components/TodoSearch";
 import TodoSort, { type SortOption } from "@/components/TodoSort";
 import { useTodos } from "@/hooks/use-todos";
 import { useSubtasks } from "@/hooks/use-subtasks";
-import { useSuggestions } from "@/hooks/use-suggestions";
 import { useProfile } from "@/hooks/use-profile";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
-const AiSuggestions = lazy(() => import("@/components/AiSuggestions"));
-const WeeklyProductivity = lazy(() => import("@/components/WeeklyProductivity"));
-
 const Index = () => {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("manual");
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
@@ -43,7 +37,6 @@ const Index = () => {
   const { todos, loading, fetchTodos, addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted, handleDragEnd } = useTodos();
   const { subtasksByTodo, fetchSubtasks, addSubtask, toggleSubtask, deleteSubtask } = useSubtasks();
   const { displayName, avatarUrl, fetchProfile } = useProfile();
-  const { suggestions, loading: loadingSuggestions, fetchSuggestions, addSuggestion, dismissSuggestion } = useSuggestions(todos, addTodo);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -65,7 +58,6 @@ const Index = () => {
     let result = todos;
     if (filter === "active") result = result.filter((t) => !t.done);
     if (filter === "completed") result = result.filter((t) => t.done);
-    if (categoryFilter) result = result.filter((t) => t.category === categoryFilter);
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((t) => t.text.toLowerCase().includes(q));
@@ -83,7 +75,7 @@ const Index = () => {
       result = [...result].sort((a, b) => a.text.localeCompare(b.text));
     }
     return result;
-  }, [todos, filter, categoryFilter, searchQuery, sortBy]);
+  }, [todos, filter, searchQuery, sortBy]);
 
   const hasCompleted = useMemo(() => todos.some((t) => t.done), [todos]);
   const completedCount = useMemo(() => todos.filter((t) => t.done).length, [todos]);
@@ -126,11 +118,13 @@ const Index = () => {
 
         <FilterTabs filter={filter} onFilterChange={setFilter} />
 
-        <CategoryFilter todos={todos} selectedCategory={categoryFilter} onCategoryChange={setCategoryFilter} />
-
-        <TodoSearch value={searchQuery} onChange={setSearchQuery} />
-
-        <TodoSort value={sortBy} onChange={setSortBy} />
+        {/* Compact search + sort row */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex-1">
+            <TodoSearch value={searchQuery} onChange={setSearchQuery} />
+          </div>
+          <TodoSort value={sortBy} onChange={setSortBy} />
+        </div>
 
         <TodoProgress total={todos.length} completed={completedCount} />
 
@@ -193,20 +187,6 @@ const Index = () => {
             Clear completed
           </button>
         )}
-
-        <Suspense fallback={null}>
-          <AiSuggestions
-            suggestions={suggestions}
-            loading={loadingSuggestions}
-            onFetch={fetchSuggestions}
-            onAdd={addSuggestion}
-            onDismiss={dismissSuggestion}
-          />
-        </Suspense>
-
-        <Suspense fallback={null}>
-          <WeeklyProductivity todos={todos} />
-        </Suspense>
       </main>
     </div>
   );
