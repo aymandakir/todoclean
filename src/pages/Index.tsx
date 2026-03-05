@@ -130,6 +130,8 @@ const Index = () => {
 
         <TodoSearch value={searchQuery} onChange={setSearchQuery} />
 
+        <TodoSort value={sortBy} onChange={setSortBy} />
+
         <TodoProgress total={todos.length} completed={completedCount} />
 
         {/* Task List */}
