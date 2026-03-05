@@ -22,6 +22,7 @@ import CategoryFilter from "@/components/CategoryFilter";
 import TodoProgress from "@/components/TodoProgress";
 import TodoSearch from "@/components/TodoSearch";
 import { useTodos } from "@/hooks/use-todos";
+import { useSubtasks } from "@/hooks/use-subtasks";
 import { useSuggestions } from "@/hooks/use-suggestions";
 import { useProfile } from "@/hooks/use-profile";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
