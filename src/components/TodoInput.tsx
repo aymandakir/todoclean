@@ -121,47 +121,59 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
           Add
         </button>
       </div>
-      <div className="flex items-center gap-4 mt-2 flex-wrap">
-        <div className="flex items-center gap-1">
-          {priorityOptions.map((p) => (
-            <button
-              key={p.value}
-              onClick={() => setPriority(p.value)}
-              className={cn(
-                "flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium transition-all",
-                priority === p.value
-                  ? "bg-secondary text-foreground ring-1 ring-ring"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <span className={cn("h-2 w-2 rounded-full", p.dot)} />
-              {p.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-1">
-          <Repeat className="h-3 w-3 text-muted-foreground" />
-          {recurrenceOptions.map((r) => (
-            <button
-              key={r.value}
-              onClick={() => setRecurrence(recurrence === r.value ? null : r.value)}
-              className={cn(
-                "rounded-full px-2 py-0.5 text-[11px] font-medium transition-all",
-                recurrence === r.value
-                  ? "bg-accent text-accent-foreground ring-1 ring-ring"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
-        {dueDate && (
-          <p className="text-xs text-muted-foreground">
-            Due: {format(dueDate, "MMM d, yyyy")}
-          </p>
+      <AnimatePresence>
+        {showOptions && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center gap-4 mt-2 flex-wrap">
+              <div className="flex items-center gap-1">
+                {priorityOptions.map((p) => (
+                  <button
+                    key={p.value}
+                    onClick={() => setPriority(p.value)}
+                    className={cn(
+                      "flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium transition-all",
+                      priority === p.value
+                        ? "bg-secondary text-foreground ring-1 ring-ring"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span className={cn("h-2 w-2 rounded-full", p.dot)} />
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-1">
+                <Repeat className="h-3 w-3 text-muted-foreground" />
+                {recurrenceOptions.map((r) => (
+                  <button
+                    key={r.value}
+                    onClick={() => setRecurrence(recurrence === r.value ? null : r.value)}
+                    className={cn(
+                      "rounded-full px-2 py-0.5 text-[11px] font-medium transition-all",
+                      recurrence === r.value
+                        ? "bg-accent text-accent-foreground ring-1 ring-ring"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
+      {dueDate && (
+        <p className="text-xs text-muted-foreground mt-1">
+          Due: {format(dueDate, "MMM d, yyyy")}
+        </p>
+      )}
     </div>
   );
 });
