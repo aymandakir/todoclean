@@ -15,6 +15,11 @@ interface SortableTodoItemProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: { text?: string; due_date?: string | null; priority?: Priority; recurrence?: Recurrence | null }) => Promise<boolean>;
+  subtasks?: Subtask[];
+  onFetchSubtasks?: (todoId: string) => void;
+  onAddSubtask?: (todoId: string, text: string) => Promise<void>;
+  onToggleSubtask?: (todoId: string, subtaskId: string) => Promise<void>;
+  onDeleteSubtask?: (todoId: string, subtaskId: string) => Promise<void>;
 }
 
 const categoryColors: Record<string, string> = {
