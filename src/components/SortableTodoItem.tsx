@@ -120,14 +120,16 @@ const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate, subtasks, o
       className="group/item rounded-lg border border-border bg-card"
     >
       <div className="flex items-center gap-3 px-4 py-3">
-        <button
-          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to reorder"
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
+        {!isDragDisabled && (
+          <button
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
+            {...attributes}
+            {...listeners}
+            aria-label="Drag to reorder"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        )}
         <button
           onClick={() => {
             const currentIdx = priorityOrder.indexOf(todo.priority);
