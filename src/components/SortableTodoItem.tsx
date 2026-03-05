@@ -20,6 +20,7 @@ interface SortableTodoItemProps {
   onAddSubtask?: (todoId: string, text: string) => Promise<void>;
   onToggleSubtask?: (todoId: string, subtaskId: string) => Promise<void>;
   onDeleteSubtask?: (todoId: string, subtaskId: string) => Promise<void>;
+  isDragDisabled?: boolean;
 }
 
 const categoryColors: Record<string, string> = {
