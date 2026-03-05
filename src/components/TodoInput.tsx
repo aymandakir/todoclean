@@ -1,11 +1,12 @@
 import { memo, useState, useRef, forwardRef, useImperativeHandle } from "react";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, SlidersHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import type { Priority, Recurrence } from "@/types/todo";
 import { Repeat } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface TodoInputProps {
   onAdd: (text: string, dueDate?: Date, priority?: Priority, recurrence?: Recurrence | null) => Promise<boolean | undefined>;
