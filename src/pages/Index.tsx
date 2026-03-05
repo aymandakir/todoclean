@@ -39,6 +39,7 @@ const Index = () => {
   const inputRef = useRef<TodoInputHandle>(null);
 
   const { todos, loading, fetchTodos, addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted, handleDragEnd } = useTodos();
+  const { subtasksByTodo, fetchSubtasks, addSubtask, toggleSubtask, deleteSubtask } = useSubtasks();
   const { displayName, avatarUrl, fetchProfile } = useProfile();
   const { suggestions, loading: loadingSuggestions, fetchSuggestions, addSuggestion, dismissSuggestion } = useSuggestions(todos, addTodo);
 
