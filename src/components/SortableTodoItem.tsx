@@ -1,12 +1,14 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, CalendarIcon, X, Repeat } from "lucide-react";
+import { GripVertical, CalendarIcon, X, Repeat, ChevronDown } from "lucide-react";
 import { differenceInDays, parseISO, startOfDay, format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import type { Todo, Priority, Recurrence } from "@/types/todo";
+import SubtaskList from "@/components/SubtaskList";
+import type { Subtask } from "@/hooks/use-subtasks";
 
 interface SortableTodoItemProps {
   todo: Todo;
