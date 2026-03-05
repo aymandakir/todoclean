@@ -59,6 +59,8 @@ const Index = () => {
     fetchProfile();
   }, [fetchTodos, fetchProfile]);
 
+  const priorityValue: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
   const filteredTodos = useMemo(() => {
     let result = todos;
     if (filter === "active") result = result.filter((t) => !t.done);
@@ -68,8 +70,20 @@ const Index = () => {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((t) => t.text.toLowerCase().includes(q));
     }
+    if (sortBy === "priority") {
+      result = [...result].sort((a, b) => (priorityValue[a.priority] ?? 1) - (priorityValue[b.priority] ?? 1));
+    } else if (sortBy === "due_date") {
+      result = [...result].sort((a, b) => {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return a.due_date.localeCompare(b.due_date);
+      });
+    } else if (sortBy === "alphabetical") {
+      result = [...result].sort((a, b) => a.text.localeCompare(b.text));
+    }
     return result;
-  }, [todos, filter, categoryFilter, searchQuery]);
+  }, [todos, filter, categoryFilter, searchQuery, sortBy]);
 
   const hasCompleted = useMemo(() => todos.some((t) => t.done), [todos]);
   const completedCount = useMemo(() => todos.filter((t) => t.done).length, [todos]);
