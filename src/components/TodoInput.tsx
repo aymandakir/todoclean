@@ -81,6 +81,16 @@ const TodoInput = forwardRef<TodoInputHandle, TodoInputProps>(({ onAdd }, ref) =
             </span>
           )}
         </div>
+        <button
+          onClick={() => setShowOptions((v) => !v)}
+          className={cn(
+            "rounded-lg border border-border bg-card p-2 text-foreground hover:bg-accent transition-colors",
+            showOptions && "bg-accent"
+          )}
+          aria-label="Task options"
+        >
+          <SlidersHorizontal className="h-5 w-5" />
+        </button>
         <Popover>
           <PopoverTrigger asChild>
             <button
