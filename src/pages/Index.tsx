@@ -21,6 +21,7 @@ import FilterTabs from "@/components/FilterTabs";
 import CategoryFilter from "@/components/CategoryFilter";
 import TodoProgress from "@/components/TodoProgress";
 import TodoSearch from "@/components/TodoSearch";
+import TodoSort, { type SortOption } from "@/components/TodoSort";
 import { useTodos } from "@/hooks/use-todos";
 import { useSubtasks } from "@/hooks/use-subtasks";
 import { useSuggestions } from "@/hooks/use-suggestions";
