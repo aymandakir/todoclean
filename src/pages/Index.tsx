@@ -35,6 +35,7 @@ const Index = () => {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("manual");
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [showHelp, setShowHelp] = useState(false);
   const inputRef = useRef<TodoInputHandle>(null);
