@@ -59,9 +59,10 @@ function getDueDateInfo(dueDateStr: string | null | undefined, done: boolean) {
   return { label: `${diff}d`, className: "bg-muted text-muted-foreground" };
 }
 
-const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate }: SortableTodoItemProps) => {
+const SortableTodoItem = memo(({ todo, onToggle, onDelete, onUpdate, subtasks, onFetchSubtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask }: SortableTodoItemProps) => {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(todo.text);
+  const [expanded, setExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const {
