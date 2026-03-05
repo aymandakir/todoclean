@@ -22,6 +22,7 @@ import CategoryFilter from "@/components/CategoryFilter";
 import TodoProgress from "@/components/TodoProgress";
 import TodoSearch from "@/components/TodoSearch";
 import { useTodos } from "@/hooks/use-todos";
+import { useSubtasks } from "@/hooks/use-subtasks";
 import { useSuggestions } from "@/hooks/use-suggestions";
 import { useProfile } from "@/hooks/use-profile";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
@@ -38,6 +39,7 @@ const Index = () => {
   const inputRef = useRef<TodoInputHandle>(null);
 
   const { todos, loading, fetchTodos, addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted, handleDragEnd } = useTodos();
+  const { subtasksByTodo, fetchSubtasks, addSubtask, toggleSubtask, deleteSubtask } = useSubtasks();
   const { displayName, avatarUrl, fetchProfile } = useProfile();
   const { suggestions, loading: loadingSuggestions, fetchSuggestions, addSuggestion, dismissSuggestion } = useSuggestions(todos, addTodo);
 
@@ -152,6 +154,11 @@ const Index = () => {
                       onToggle={toggleTodo}
                       onDelete={deleteTodo}
                       onUpdate={updateTodo}
+                      subtasks={subtasksByTodo[todo.id]}
+                      onFetchSubtasks={fetchSubtasks}
+                      onAddSubtask={addSubtask}
+                      onToggleSubtask={toggleSubtask}
+                      onDeleteSubtask={deleteSubtask}
                     />
                   </motion.div>
                 ))}
